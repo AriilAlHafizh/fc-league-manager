@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FC26 League Manager - Pengaturan Liga Manual</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Oswald:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <!-- Header / App Bar -->
+  <header class="top-nav">
+    <div class="nav-brand">
+      <div class="brand-badge">FC 26</div>
+      <div class="brand-text">
+        <h1 id="league-title-display">LEAGUE TOURNAMENT</h1>
+        <span class="sub-brand">Manual Match & Standings Engine</span>
+      </div>
+    </div>
+
+    <!-- Quick Overview Stats -->
+    <div class="top-stats">
+      <div class="stat-pill">
+        <span class="stat-label">TOTAL KLUB</span>
+        <span class="stat-value" id="stat-total-clubs">0</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-label">LAPTOP AKTIF</span>
+        <span class="stat-value" id="stat-total-laptops">2</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-label">PROGRESS LIGA</span>
+        <span class="stat-value" id="stat-progress">0 / 0</span>
+      </div>
+      <div class="stat-pill stat-saved-pill"
+        title="Data tersimpan permanen di memori browser (tidak akan hilang walau ditinggal berhari-hari)">
+        <span class="stat-label">PENYIMPANAN</span>
+        <span class="stat-value save-status"><span class="save-dot"></span> Tersimpan Aman</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="main-tabs">
+    <div class="tabs-container">
+      <button class="tab-btn active" data-tab="tab-standings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 20V10M12 20V4M6 20v-6" />
+        </svg>
+        Klasemen Liga
+      </button>
+      <button class="tab-btn" data-tab="tab-fixtures">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+        Jadwal & Hasil Pertandingan
+      </button>
+      <button class="tab-btn" data-tab="tab-teams">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        Daftar Klub
+      </button>
+      <button class="tab-btn" data-tab="tab-settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+        Pengaturan
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content Container -->
+  <main class="main-content">
+
+    <!-- ==================== TAB 1: KLASEMEN ==================== -->
+    <section id="tab-standings" class="tab-panel active">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Klasemen Resmi Liga</h2>
+          <p class="panel-subtitle">Standar Poin Dunia: Menang = 3 poin, Seri = 1 poin, Kalah = 0 poin</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary btn-sm" id="btn-print-standings" title="Cetak atau simpan PDF klasemen">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 6 2 18 2 18 9" />
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+              <rect x="6" y="14" width="12" height="8" />
+            </svg>
+            Cetak / Export
+          </button>
+        </div>
+      </div>
+
+      <!-- Standings Table Container -->
+      <div class="table-card">
+        <div class="table-responsive">
+          <table class="standings-table">
+            <thead>
+              <tr>
+                <th class="col-pos">#</th>
+                <th class="col-team">KLUB & PESERTA</th>
+                <th class="col-stat" title="Main / Played">P</th>
+                <th class="col-stat" title="Menang / Won">W</th>
+                <th class="col-stat" title="Seri / Drawn">D</th>
+                <th class="col-stat" title="Kalah / Lost">L</th>
+                <th class="col-stat" title="Gol Memasukkan / Goals For">GF</th>
+                <th class="col-stat" title="Gol Kemasukan / Goals Against">GA</th>
+                <th class="col-stat" title="Selisih Gol / Goal Difference">GD</th>
+                <th class="col-pts" title="Total Poin">PTS</th>
+                <th class="col-form">5 LAGA TERAKHIR</th>
+              </tr>
+            </thead>
+            <tbody id="standings-body">
+              <!-- Rendered via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer-legend">
+          <div class="legend-item"><span class="legend-dot champion"></span> Peringkat 1: Calon Juara</div>
+          <div class="legend-item"><span class="legend-dot ucl"></span> Peringkat 2-4: Zona Atas</div>
+          <div class="legend-item"><span class="legend-dot normal"></span> Peringkat 5+: Zona Tengah/Bawah</div>
+          <div class="legend-item ms-auto">Urutan: PTS &gt; GD &gt; GF &gt; Nama</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: JADWAL & HASIL ==================== -->
+    <section id="tab-fixtures" class="tab-panel">
+      <!-- Next Match on Laptop Banner -->
+      <div class="next-matches-banner" id="next-matches-container">
+        <div class="banner-header">
+          <div class="banner-title-group">
+            <span class="live-pulse"></span>
+            <div>
+              <h3 class="banner-title">PERTANDINGAN SELANJUTNYA DI SETIAP LAPTOP</h3>
+              <span class="banner-tip">Pantau giliran bermain peserta turnamen di setiap laptop/meja</span>
+            </div>
+          </div>
+          <div class="banner-laptop-controls">
+            <button class="btn btn-secondary btn-sm" id="btn-quick-remove-laptop" title="Kurangi 1 laptop">
+              - Kurangi Laptop
+            </button>
+            <button class="btn btn-primary btn-sm" id="btn-quick-add-laptop" title="Tambah 1 laptop baru">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              + Tambah Laptop Baru
+            </button>
+          </div>
+        </div>
+        <div class="laptop-next-grid" id="laptop-next-grid">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Match Filter & Actions Bar -->
+      <div class="fixtures-controls">
+        <div class="filter-group">
+          <span class="filter-label">Filter:</span>
+          <button class="filter-btn active" data-filter="all">Semua Pertandingan</button>
+          <button class="filter-btn" data-filter="upcoming">Belum Selesai</button>
+          <button class="filter-btn" data-filter="finished">Selesai (Hasil)</button>
+        </div>
+
+        <div class="filter-group">
+          <label for="laptop-filter-select" class="filter-label">Pilih Laptop:</label>
+          <select id="laptop-filter-select" class="form-select-sm">
+            <option value="all">Semua Laptop</option>
+            <!-- Dynamic laptop options -->
+          </select>
+        </div>
+
+        <div class="ms-auto control-buttons">
+          <button class="btn btn-secondary btn-sm" id="btn-add-manual-match">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            + Tambah Laga Manual
+          </button>
+          <button class="btn btn-primary btn-sm" id="btn-generate-fixtures">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+            </svg>
+            Generate Jadwal Liga
+          </button>
+        </div>
+      </div>
+
+      <!-- Fixtures List Container -->
+      <div class="fixtures-list" id="fixtures-container">
+        <!-- Rendered via JavaScript -->
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: DAFTAR KLUB ==================== -->
+    <section id="tab-teams" class="tab-panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Manajemen Klub & Peserta</h2>
+          <p class="panel-subtitle">Daftarkan klub dan nama pemain/peserta yang bertanding di liga ini</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" id="btn-load-preset">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="m10 15 5-3-5-3v6z" />
+            </svg>
+            Muat Preset Tim FC26 (8 Tim)
+          </button>
+          <button class="btn btn-primary" id="btn-add-team">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Tambah Klub Baru
+          </button>
+        </div>
+      </div>
+
+      <!-- Teams Grid -->
+      <div class="teams-grid" id="teams-grid">
+        <!-- Rendered via JavaScript -->
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: PENGATURAN ==================== -->
+    <section id="tab-settings" class="tab-panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Pengaturan Turnamen & Sistem</h2>
+          <p class="panel-subtitle">Sesuaikan konfigurasi laptop, format liga, dan manajemen data</p>
+        </div>
+      </div>
+
+      <div class="settings-grid">
+        <!-- Card 1: Pengaturan Laptop -->
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+            <h3>Alokasi Laptop / Meja Pertandingan</h3>
+          </div>
+          <div class="setting-card-body">
+            <p class="setting-desc">Tentukan berapa banyak laptop yang tersedia di lokasi turnamen. Jadwal pertandingan
+              akan secara bergantian dialokasikan ke laptop-laptop ini.</p>
+            <div class="form-group">
+              <label for="input-laptop-count">Jumlah Laptop Tersedia:</label>
+              <div class="number-input-wrapper">
+                <button type="button" class="btn-num" id="btn-laptop-dec">-</button>
+                <input type="number" id="input-laptop-count" min="1" max="16" value="2" class="form-control-num">
+                <button type="button" class="btn-num" id="btn-laptop-inc">+</button>
+              </div>
+              <small class="form-hint">Contoh: Jika ada 3 laptop, sistem akan membagi match bergantian di Laptop 1,
+                Laptop 2, dan Laptop 3.</small>
+            </div>
+            <button class="btn btn-primary btn-sm mt-3" id="btn-save-laptop-settings">Simpan Pengaturan Laptop</button>
+          </div>
+        </div>
+
+        <!-- Card 2: Pengaturan Format Liga -->
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+              <path d="M4 22h16" />
+              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+            </svg>
+            <h3>Format & Nama Liga</h3>
+          </div>
+          <div class="setting-card-body">
+            <div class="form-group">
+              <label for="input-league-name">Nama Liga / Turnamen:</label>
+              <input type="text" id="input-league-name" class="form-control" value="FC26 PREMIER LEAGUE">
+            </div>
+            <div class="form-group">
+              <label>Sistem Pertemuan:</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" name="league-system" value="single" checked>
+                  <span>1 Putaran (Single Round-Robin)</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="league-system" value="double">
+                  <span>2 Putaran (Home & Away)</span>
+                </label>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm" id="btn-save-league-info">Simpan Format Liga</button>
+          </div>
+        </div>
+
+        <!-- Card 3: Standar Poin Liga Dunia -->
+        <div class="setting-card">
+          <div class="setting-card-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            <h3>Standar Aturan Poin FIFA / Dunia</h3>
+          </div>
+          <div class="setting-card-body">
+            <div class="rules-summary">
+              <div class="rule-row">
+                <span class="rule-name">Menang (Win)</span>
+                <span class="rule-badge win">+3 Poin</span>
+              </div>
+              <div class="rule-row">
+                <span class="rule-name">Seri (Draw)</span>
+                <span class="rule-badge draw">+1 Poin</span>
+              </div>
+              <div class="rule-row">
+                <span class="rule-name">Kalah (Loss)</span>
+                <span class="rule-badge loss">0 Poin</span>
+              </div>
+              <div class="rule-row">
+                <span class="rule-name">Kriteria Tie-Breaker</span>
+                <span class="rule-desc">Poin &rarr; Selisih Gol (GD) &rarr; Gol Masuk (GF) &rarr; Alfabet</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: Backup & Reset Data -->
+        <div class="setting-card">
+          <div class="setting-card-header danger-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18" />
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+            </svg>
+            <h3>Backup & Reset Data Liga</h3>
+          </div>
+          <div class="setting-card-body">
+            <p class="setting-desc">Simpan cadangan data turnamen ke file JSON atau reset jadwal/klub untuk memulai
+              turnamen baru.</p>
+            <div class="backup-actions">
+              <button class="btn btn-secondary btn-sm" id="btn-export-data">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Export JSON
+              </button>
+              <label class="btn btn-secondary btn-sm btn-file">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Import JSON
+                <input type="file" id="input-import-data" accept=".json" style="display: none;">
+              </label>
+            </div>
+            <hr class="card-divider">
+            <div class="danger-actions">
+              <button class="btn btn-danger-outline btn-sm" id="btn-reset-scores">Reset Semua Skor Pertandingan</button>
+              <button class="btn btn-danger btn-sm" id="btn-reset-all">Reset Total (Hapus Semua)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Modal 1: Input / Edit Skor Pertandingan -->
+  <div class="modal-overlay" id="modal-score">
+    <div class="modal-content modal-score-dialog">
+      <div class="modal-header">
+        <div>
+          <span class="match-meta-tag" id="score-modal-meta">MATCH #1 • LAPTOP 1</span>
+          <h3 class="modal-title">Input Hasil Pertandingan</h3>
+        </div>
+        <button class="modal-close" data-close="modal-score">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="score-input-layout">
+          <!-- Home Team -->
+          <div class="team-score-card">
+            <div class="team-badge-lg" id="modal-home-badge" style="background-color: #3b82f6;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h4 class="team-name" id="modal-home-name">Real Madrid</h4>
+            <span class="player-name" id="modal-home-player">Player 1</span>
+            <div class="score-stepper">
+              <button type="button" class="btn-step" onclick="window.app.adjustScore('home', -1)">-</button>
+              <input type="number" id="input-home-score" class="score-num-input" value="0" min="0" max="99">
+              <button type="button" class="btn-step" onclick="window.app.adjustScore('home', 1)">+</button>
+            </div>
+          </div>
+
+          <div class="vs-divider">
+            <span class="vs-text">VS</span>
+          </div>
+
+          <!-- Away Team -->
+          <div class="team-score-card">
+            <div class="team-badge-lg" id="modal-away-badge" style="background-color: #ef4444;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h4 class="team-name" id="modal-away-name">Manchester City</h4>
+            <span class="player-name" id="modal-away-player">Player 2</span>
+            <div class="score-stepper">
+              <button type="button" class="btn-step" onclick="window.app.adjustScore('away', -1)">-</button>
+              <input type="number" id="input-away-score" class="score-num-input" value="0" min="0" max="99">
+              <button type="button" class="btn-step" onclick="window.app.adjustScore('away', 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Laptop Selection for Match (can change laptop if needed) -->
+        <div class="form-group mt-4">
+          <label for="modal-match-laptop">Bermain di Laptop:</label>
+          <select id="modal-match-laptop" class="form-control">
+            <!-- options generated dynamically -->
+          </select>
+        </div>
+
+        <input type="hidden" id="modal-match-id">
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-close="modal-score">Batal</button>
+        <button class="btn btn-danger-outline btn-sm me-auto" id="btn-clear-match-result" style="display:none;">Hapus
+          Skor</button>
+        <button class="btn btn-primary" id="btn-save-score">Simpan Hasil Pertandingan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Tambah / Edit Klub -->
+  <div class="modal-overlay" id="modal-team">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="team-modal-title">Tambah Klub Baru</h3>
+        <button class="modal-close" data-close="modal-team">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-team">
+          <input type="hidden" id="team-edit-id">
+
+          <div class="form-group">
+            <label for="input-team-name">Nama Klub <span class="required">*</span></label>
+            <input type="text" id="input-team-name" class="form-control"
+              placeholder="Contoh: Real Madrid, Arsenal, FC Barcelona" required>
+          </div>
+
+          <div class="form-group">
+            <label for="input-team-player">Nama Pemain / Peserta <span class="required">*</span></label>
+            <input type="text" id="input-team-player" class="form-control" placeholder="Contoh: Budi, Dimas, Alex"
+              required>
+          </div>
+
+          <div class="form-group">
+            <label for="input-team-color">Warna Identitas Klub</label>
+            <div class="color-picker-wrap">
+              <input type="color" id="input-team-color" class="color-input" value="#2563eb">
+              <span class="color-hex-text" id="color-hex-preview">#2563eb</span>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-close="modal-team">Batal</button>
+        <button class="btn btn-primary" id="btn-save-team">Simpan Klub</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Tambah Pertandingan Manual -->
+  <div class="modal-overlay" id="modal-manual-match">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Tambah Pertandingan Manual</h3>
+        <button class="modal-close" data-close="modal-manual-match">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="manual-home-select">Tim Tuan Rumah (Home):</label>
+          <select id="manual-home-select" class="form-control"></select>
+        </div>
+        <div class="form-group">
+          <label for="manual-away-select">Tim Tamu (Away):</label>
+          <select id="manual-away-select" class="form-control"></select>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="manual-laptop-select">Laptop / Meja:</label>
+            <select id="manual-laptop-select" class="form-control"></select>
+          </div>
+          <div class="form-group col-6">
+            <label for="manual-round-input">Babak / Matchday:</label>
+            <input type="number" id="manual-round-input" class="form-control" value="1" min="1">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-close="modal-manual-match">Batal</button>
+        <button class="btn btn-primary" id="btn-save-manual-match">Tambahkan ke Jadwal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">Notifikasi</div>
+
+  <!-- Scripts -->
+  <script src="js/app.js"></script>
+</body>
+
+</html>
