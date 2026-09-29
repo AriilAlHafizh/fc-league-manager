@@ -64,6 +64,17 @@
         </svg>
         Jadwal & Hasil Pertandingan
       </button>
+      <button class="tab-btn tab-btn-ucl" id="tab-btn-ucl" data-tab="tab-ucl">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+          <path d="M4 22h16" />
+          <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+          <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+        </svg>
+        Champions League (4 Besar)
+      </button>
       <button class="tab-btn" data-tab="tab-teams">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -104,6 +115,28 @@
             Cetak / Export
           </button>
         </div>
+      </div>
+
+      <!-- Champions League Standings Callout -->
+      <div class="ucl-standings-callout" id="ucl-standings-callout" style="display:none;">
+        <div class="ucl-callout-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+            <path d="M4 22h16" />
+            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+          </svg>
+        </div>
+        <div class="ucl-callout-content">
+          <span class="ucl-callout-title">Mode Champions League Aktif</span>
+          <span class="ucl-callout-desc">4 tim teratas (#1 - #4) klasemen akhir akan bertarung memperebutkan trofi di
+            Fase Knockout!</span>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="btn-goto-ucl">
+          Buka Bagan Knockout &rarr;
+        </button>
       </div>
 
       <!-- Standings Table Container -->
@@ -209,6 +242,100 @@
       </div>
     </section>
 
+    <!-- ==================== TAB 2B: CHAMPIONS LEAGUE (FASE KNOCKOUT 4 BESAR) ==================== -->
+    <section id="tab-ucl" class="tab-panel">
+      <div class="panel-header">
+        <div>
+          <div class="ucl-title-badge">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+              <path d="M4 22h16" />
+              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+            </svg>
+            CHAMPIONS LEAGUE FC26
+          </div>
+          <h2 class="panel-title">Fase Gugur (Knockout 4 Besar)</h2>
+          <p class="panel-subtitle">4 Tim Teratas Klasemen Liga Bertarung di Semifinal, Perebutan Juara 3, dan Grand
+            Final</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary btn-sm" id="btn-sync-ucl"
+            title="Tarik atau perbarui 4 tim teratas dari klasemen terbaru">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+            </svg>
+            Kunci / Update 4 Besar Liga
+          </button>
+          <button class="btn btn-danger-outline btn-sm" id="btn-reset-ucl" title="Reset skor pertandingan knockout">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10" />
+              <polyline points="23 20 23 14 17 14" />
+              <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
+            </svg>
+            Reset Knockout
+          </button>
+        </div>
+      </div>
+
+      <!-- UCL Status Banner -->
+      <div class="ucl-status-banner" id="ucl-status-banner">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Winner Champion Podium (Rendered if Grand Final finished) -->
+      <div class="ucl-podium-card" id="ucl-podium-card" style="display: none;">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Visual Tournament Bracket -->
+      <div class="ucl-bracket-wrapper">
+        <!-- Bracket Column 1: SEMIFINALS -->
+        <div class="bracket-col">
+          <div class="bracket-stage-header">
+            <span class="stage-tag">BABAK 1</span>
+            <h3 class="stage-name">SEMIFINAL</h3>
+            <span class="stage-desc">Sistem Gugur Tunggal</span>
+          </div>
+
+          <div class="bracket-matches">
+            <!-- Semifinal 1 Card (#1 vs #4) -->
+            <div class="ucl-match-card" id="ucl-card-sf1">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Semifinal 2 Card (#2 vs #3) -->
+            <div class="ucl-match-card" id="ucl-card-sf2">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Bracket Column 2: FINALS & 3RD PLACE -->
+        <div class="bracket-col">
+          <div class="bracket-stage-header highlight-gold">
+            <span class="stage-tag gold">PENENTUAN JUARA</span>
+            <h3 class="stage-name">GRAND FINAL & JUARA 3</h3>
+            <span class="stage-desc">Perebutan Mahkota & Trofi</span>
+          </div>
+
+          <div class="bracket-matches">
+            <!-- Grand Final Card -->
+            <div class="ucl-match-card final-card" id="ucl-card-final">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- 3rd Place Match Card -->
+            <div class="ucl-match-card third-place-card" id="ucl-card-third">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ==================== TAB 3: DAFTAR KLUB ==================== -->
     <section id="tab-teams" class="tab-panel">
       <div class="panel-header">
@@ -293,7 +420,7 @@
           <div class="setting-card-body">
             <div class="form-group">
               <label for="input-league-name">Nama Liga / Turnamen:</label>
-              <input type="text" id="input-league-name" class="form-control" value="FC26 PREMIER LEAGUE">
+              <input type="text" id="input-league-name" class="form-control" value="FC26 LEAGUE">
             </div>
             <div class="form-group">
               <label>Sistem Pertemuan:</label>
@@ -309,6 +436,39 @@
               </div>
             </div>
             <button class="btn btn-primary btn-sm" id="btn-save-league-info">Simpan Format Liga</button>
+          </div>
+        </div>
+
+        <!-- Card 2b: Pengaturan Champions League / Knockout 4 Besar -->
+        <div class="setting-card">
+          <div class="setting-card-header ucl-setting-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+              <path d="M4 22h16" />
+              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+            </svg>
+            <h3>Champions League (Knockout 4 Besar)</h3>
+          </div>
+          <div class="setting-card-body">
+            <p class="setting-desc">
+              Pilihan apakah turnamen menggunakan fase sistem gugur (knockout) setelah putaran liga selesai. Jika aktif,
+              4 tim teratas akan bertarung di Semifinal (#1 vs #4 & #2 vs #3) dan Final untuk memperebutkan trofi Juara
+              Champions League FC26.
+            </p>
+            <div class="form-group">
+              <label class="switch-control-label">
+                <input type="checkbox" id="input-ucl-enabled" class="switch-checkbox" checked>
+                <span class="switch-slider"></span>
+                <span class="switch-label-text" id="ucl-switch-label">Fase Knockout: <strong>AKTIF</strong></span>
+              </label>
+              <small class="form-hint">Dapat dinonaktifkan kapan saja jika ingin turnamen sistem liga murni tanpa babak
+                gugur.</small>
+            </div>
+            <button class="btn btn-primary btn-sm mt-3" id="btn-save-ucl-setting">Simpan Pengaturan Champions
+              League</button>
           </div>
         </div>
 
@@ -406,7 +566,9 @@
           <!-- Home Team -->
           <div class="team-score-card">
             <div class="team-badge-lg" id="modal-home-badge" style="background-color: #3b82f6;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
             </div>
             <h4 class="team-name" id="modal-home-name">Real Madrid</h4>
             <span class="player-name" id="modal-home-player">Player 1</span>
@@ -424,7 +586,9 @@
           <!-- Away Team -->
           <div class="team-score-card">
             <div class="team-badge-lg" id="modal-away-badge" style="background-color: #ef4444;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
             </div>
             <h4 class="team-name" id="modal-away-name">Manchester City</h4>
             <span class="player-name" id="modal-away-player">Player 2</span>
@@ -525,6 +689,97 @@
       <div class="modal-footer">
         <button class="btn btn-secondary" data-close="modal-manual-match">Batal</button>
         <button class="btn btn-primary" id="btn-save-manual-match">Tambahkan ke Jadwal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Input / Edit Skor Knockout (Champions League) -->
+  <div class="modal-overlay" id="modal-ucl-score">
+    <div class="modal-content modal-score-dialog">
+      <div class="modal-header ucl-modal-header">
+        <div>
+          <span class="match-meta-tag ucl-meta" id="ucl-score-modal-meta">CHAMPIONS LEAGUE • SEMIFINAL 1</span>
+          <h3 class="modal-title" id="ucl-score-modal-title">Input Hasil Pertandingan Knockout</h3>
+        </div>
+        <button class="modal-close" data-close="modal-ucl-score">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="score-input-layout">
+          <!-- Home Team -->
+          <div class="team-score-card">
+            <div class="team-badge-lg" id="modal-ucl-home-badge" style="background-color: #3b82f6;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+            <h4 class="team-name" id="modal-ucl-home-name">Team 1</h4>
+            <span class="player-name" id="modal-ucl-home-player">Player 1</span>
+            <div class="score-stepper">
+              <button type="button" class="btn-step" onclick="window.app.adjustUclScore('home', -1)">-</button>
+              <input type="number" id="input-ucl-home-score" class="score-num-input" value="0" min="0" max="99">
+              <button type="button" class="btn-step" onclick="window.app.adjustUclScore('home', 1)">+</button>
+            </div>
+          </div>
+
+          <div class="vs-divider">
+            <span class="vs-text">VS</span>
+          </div>
+
+          <!-- Away Team -->
+          <div class="team-score-card">
+            <div class="team-badge-lg" id="modal-ucl-away-badge" style="background-color: #ef4444;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+            <h4 class="team-name" id="modal-ucl-away-name">Team 2</h4>
+            <span class="player-name" id="modal-ucl-away-player">Player 2</span>
+            <div class="score-stepper">
+              <button type="button" class="btn-step" onclick="window.app.adjustUclScore('away', -1)">-</button>
+              <input type="number" id="input-ucl-away-score" class="score-num-input" value="0" min="0" max="99">
+              <button type="button" class="btn-step" onclick="window.app.adjustUclScore('away', 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Penalty Shootout Section (For Tie-Breaking in Knockout) -->
+        <div class="penalty-shootout-card mt-3" id="ucl-penalty-container">
+          <div class="penalty-toggle-row">
+            <label class="checkbox-label">
+              <input type="checkbox" id="input-ucl-penalties-toggle">
+              <span><strong>Adu Penalti (Wajib jika Skor Waktu Normal Seri)</strong></span>
+            </label>
+          </div>
+          <div class="penalty-inputs-row" id="ucl-penalty-inputs" style="display: none;">
+            <div class="penalty-input-item">
+              <label id="ucl-home-pen-label">Penalti Home:</label>
+              <input type="number" id="input-ucl-home-pen" class="form-control-num" min="0" max="30" value="0">
+            </div>
+            <div class="penalty-vs">PK</div>
+            <div class="penalty-input-item">
+              <label id="ucl-away-pen-label">Penalti Away:</label>
+              <input type="number" id="input-ucl-away-pen" class="form-control-num" min="0" max="30" value="0">
+            </div>
+          </div>
+        </div>
+
+        <!-- Laptop Selection for Knockout Match -->
+        <div class="form-group mt-3">
+          <label for="modal-ucl-match-laptop">Bermain di Laptop:</label>
+          <select id="modal-ucl-match-laptop" class="form-control">
+            <!-- options generated dynamically -->
+          </select>
+        </div>
+
+        <input type="hidden" id="modal-ucl-match-key">
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-close="modal-ucl-score">Batal</button>
+        <button class="btn btn-danger-outline btn-sm me-auto" id="btn-clear-ucl-match" style="display:none;">Hapus
+          Hasil</button>
+        <button class="btn btn-primary" id="btn-save-ucl-score">Simpan Hasil Knockout</button>
       </div>
     </div>
   </div>

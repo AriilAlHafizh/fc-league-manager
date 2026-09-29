@@ -20,9 +20,11 @@ class FC26LeagueApp {
   constructor() {
     this.storageKey = 'fc26_league_data_v1';
     this.state = {
-      leagueName: 'FC26 PREMIER LEAGUE',
+      leagueName: 'FC26 LEAGUE',
       laptopCount: 2,
       leagueSystem: 'single', // 'single' or 'double'
+      uclEnabled: true, // UCL 4-besar knockout feature toggle
+      uclState: this.getDefaultUclState(),
       clubs: [],
       matches: []
     };
@@ -31,6 +33,76 @@ class FC26LeagueApp {
     this.currentLaptopFilter = 'all';
 
     this.init();
+  }
+
+  getDefaultUclState() {
+    return {
+      isLocked: false,
+      sf1: {
+        id: 'sf1',
+        roundName: 'Semifinal 1',
+        homeSeed: 1,
+        awaySeed: 4,
+        homeTeamId: null,
+        awayTeamId: null,
+        homeScore: 0,
+        awayScore: 0,
+        homePen: 0,
+        awayPen: 0,
+        isPenalties: false,
+        isFinished: false,
+        laptopNumber: 1,
+        winnerId: null,
+        loserId: null
+      },
+      sf2: {
+        id: 'sf2',
+        roundName: 'Semifinal 2',
+        homeSeed: 2,
+        awaySeed: 3,
+        homeTeamId: null,
+        awayTeamId: null,
+        homeScore: 0,
+        awayScore: 0,
+        homePen: 0,
+        awayPen: 0,
+        isPenalties: false,
+        isFinished: false,
+        laptopNumber: 2,
+        winnerId: null,
+        loserId: null
+      },
+      final: {
+        id: 'final',
+        roundName: 'Grand Final',
+        homeTeamId: null,
+        awayTeamId: null,
+        homeScore: 0,
+        awayScore: 0,
+        homePen: 0,
+        awayPen: 0,
+        isPenalties: false,
+        isFinished: false,
+        laptopNumber: 1,
+        winnerId: null,
+        loserId: null
+      },
+      thirdPlace: {
+        id: 'thirdPlace',
+        roundName: 'Perebutan Juara 3',
+        homeTeamId: null,
+        awayTeamId: null,
+        homeScore: 0,
+        awayScore: 0,
+        homePen: 0,
+        awayPen: 0,
+        isPenalties: false,
+        isFinished: false,
+        laptopNumber: 2,
+        winnerId: null,
+        loserId: null
+      }
+    };
   }
 
   init() {
@@ -59,6 +131,20 @@ class FC26LeagueApp {
       } catch (e) {
         console.error('Gagal membaca data localStorage', e);
       }
+    }
+
+    // Fallbacks for Champions League feature
+    if (typeof this.state.uclEnabled === 'undefined') {
+      this.state.uclEnabled = true;
+    }
+    if (!this.state.uclState) {
+      this.state.uclState = this.getDefaultUclState();
+    }
+
+    // Remove 'PREMIER' if stored in previous session
+    if (this.state.leagueName && /premier/i.test(this.state.leagueName)) {
+      this.state.leagueName = this.state.leagueName.replace(/premier\s*/gi, '').trim();
+      this.saveState();
     }
   }
 
@@ -226,6 +312,64 @@ class FC26LeagueApp {
       }
     });
 
+    // Champions League Settings Toggle & Save
+    const uclCheckbox = document.getElementById('input-ucl-enabled');
+    const uclStatusText = document.getElementById('ucl-switch-label');
+    uclCheckbox?.addEventListener('change', (e) => {
+      if (uclStatusText) {
+        uclStatusText.innerHTML = e.target.checked
+          ? 'Fase Knockout: <strong>AKTIF</strong>'
+          : 'Fase Knockout: <strong>NONAKTIF</strong>';
+      }
+    });
+
+    document.getElementById('btn-save-ucl-setting')?.addEventListener('click', () => {
+      const isEnabled = document.getElementById('input-ucl-enabled')?.checked ?? true;
+      this.state.uclEnabled = isEnabled;
+      this.saveState();
+      this.renderAll();
+      this.showToast(
+        isEnabled
+          ? 'Fitur Champions League (Knockout 4 Besar) DIAKTIFKAN!'
+          : 'Fitur Champions League DINONAKTIFKAN (Liga Reguler Murni).',
+        'success'
+      );
+    });
+
+    // Standings UCL shortcut button
+    document.getElementById('btn-goto-ucl')?.addEventListener('click', () => {
+      this.switchTab('tab-ucl');
+    });
+
+    // UCL Bracket Control Buttons
+    document.getElementById('btn-sync-ucl')?.addEventListener('click', () => {
+      this.syncUclWithStandings(true);
+    });
+
+    document.getElementById('btn-reset-ucl')?.addEventListener('click', () => {
+      if (confirm('Yakin ingin mereset hasil pertandingan fase knockout Champions League?')) {
+        this.resetUclBracket();
+      }
+    });
+
+    // Knockout Score Modal: Penalties Toggle
+    const uclPenToggle = document.getElementById('input-ucl-penalties-toggle');
+    const uclPenInputs = document.getElementById('ucl-penalty-inputs');
+    uclPenToggle?.addEventListener('change', (e) => {
+      if (uclPenInputs) {
+        uclPenInputs.style.display = e.target.checked ? 'flex' : 'none';
+      }
+    });
+
+    // Knockout Score Modal: Save & Clear buttons
+    document.getElementById('btn-save-ucl-score')?.addEventListener('click', () => {
+      this.saveUclScore();
+    });
+
+    document.getElementById('btn-clear-ucl-match')?.addEventListener('click', () => {
+      this.clearUclMatchScore();
+    });
+
     // Backup & Resets
     document.getElementById('btn-export-data')?.addEventListener('click', () => {
       this.exportJSON();
@@ -319,6 +463,7 @@ class FC26LeagueApp {
     this.renderFixtures();
     this.renderTeams();
     this.renderSettingsInputs();
+    this.renderUclSection();
   }
 
   renderHeader() {
@@ -449,11 +594,18 @@ class FC26LeagueApp {
       let rankBadgeHtml = `<span class="pos-badge pos-regular">${pos}</span>`;
 
       if (pos === 1) {
-        posClass = 'pos-1';
-        rankBadgeHtml = `<span class="pos-badge pos-champion" title="Peringkat 1 - Calon Juara">${pos}</span>`;
+        if (this.state.uclEnabled) {
+          posClass = 'pos-ucl';
+          rankBadgeHtml = `<span class="pos-badge pos-top4" title="Peringkat 1 - Lolos Knockout Champions League">${pos}</span>`;
+        } else {
+          posClass = 'pos-1';
+          rankBadgeHtml = `<span class="pos-badge pos-champion" title="Peringkat 1 - Calon Juara Liga">${pos}</span>`;
+        }
       } else if (pos <= 4) {
         posClass = 'pos-ucl';
-        rankBadgeHtml = `<span class="pos-badge pos-top4" title="Zona Atas">${pos}</span>`;
+        rankBadgeHtml = this.state.uclEnabled
+          ? `<span class="pos-badge pos-top4" title="Peringkat ${pos} - Lolos Knockout Champions League">${pos}</span>`
+          : `<span class="pos-badge pos-top4" title="Zona Atas">${pos}</span>`;
       }
 
       // Format GD with sign
@@ -760,6 +912,17 @@ class FC26LeagueApp {
     radios.forEach(r => {
       r.checked = (r.value === this.state.leagueSystem);
     });
+
+    const uclCheckbox = document.getElementById('input-ucl-enabled');
+    if (uclCheckbox) {
+      uclCheckbox.checked = !!this.state.uclEnabled;
+      const uclStatusText = document.getElementById('ucl-switch-label');
+      if (uclStatusText) {
+        uclStatusText.innerHTML = this.state.uclEnabled
+          ? 'Fase Knockout: <strong>AKTIF</strong>'
+          : 'Fase Knockout: <strong>NONAKTIF</strong>';
+      }
+    }
   }
 
   // ==================== SCHEDULE GENERATOR (ROUND ROBIN) ====================
@@ -1153,6 +1316,457 @@ class FC26LeagueApp {
     const modal = document.getElementById(modalId);
     if (modal) {
       modal.classList.remove('active');
+    }
+  }
+
+  // ==================== CHAMPIONS LEAGUE (FASE KNOCKOUT 4 BESAR) ====================
+  syncUclWithStandings(isManual = false) {
+    const standings = this.calculateStandings();
+    if (standings.length < 4) {
+      if (isManual) alert('Dibutuhkan minimal 4 klub di klasemen untuk mengunci 4 besar!');
+      return;
+    }
+
+    const ucl = this.state.uclState;
+    ucl.sf1.homeTeamId = standings[0].club.id; // Rank 1
+    ucl.sf1.awayTeamId = standings[3].club.id; // Rank 4
+    ucl.sf2.homeTeamId = standings[1].club.id; // Rank 2
+    ucl.sf2.awayTeamId = standings[2].club.id; // Rank 3
+
+    if (isManual) {
+      ucl.isLocked = true;
+      this.saveState();
+      this.renderAll();
+      this.showToast('4 Tim teratas klasemen resmi dikunci ke Semifinal Champions League!', 'success');
+    }
+  }
+
+  resetUclBracket() {
+    this.state.uclState = this.getDefaultUclState();
+    this.syncUclWithStandings(false);
+    this.saveState();
+    this.renderAll();
+    this.showToast('Bagan Champions League berhasil direset!', 'info');
+  }
+
+  renderUclSection() {
+    const uclNavBtn = document.getElementById('tab-btn-ucl');
+    const uclCallout = document.getElementById('ucl-standings-callout');
+
+    if (uclNavBtn) {
+      uclNavBtn.style.display = this.state.uclEnabled ? 'inline-flex' : 'none';
+    }
+    if (uclCallout) {
+      uclCallout.style.display = this.state.uclEnabled ? 'flex' : 'none';
+    }
+
+    if (!this.state.uclEnabled) {
+      const activeTab = document.querySelector('.tab-panel.active')?.id;
+      if (activeTab === 'tab-ucl') {
+        this.switchTab('tab-standings');
+      }
+      return;
+    }
+
+    const standings = this.calculateStandings();
+    const ucl = this.state.uclState;
+
+    // Auto-sync projected teams if not locked yet and not finished
+    if (!ucl.isLocked && standings.length >= 4) {
+      if (!ucl.sf1.isFinished && !ucl.sf2.isFinished) {
+        ucl.sf1.homeTeamId = standings[0].club.id;
+        ucl.sf1.awayTeamId = standings[3].club.id;
+        ucl.sf2.homeTeamId = standings[1].club.id;
+        ucl.sf2.awayTeamId = standings[2].club.id;
+      }
+    }
+
+    // Status Banner
+    const bannerEl = document.getElementById('ucl-status-banner');
+    if (bannerEl) {
+      const totalMatches = this.state.matches.length;
+      const finishedMatches = this.state.matches.filter(m => m.isFinished).length;
+      const isLeagueFinished = (totalMatches > 0 && finishedMatches === totalMatches);
+
+      if (ucl.final.isFinished) {
+        bannerEl.innerHTML = `
+          <div class="ucl-status-info">
+            <div class="ucl-status-icon active">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            </div>
+            <div class="ucl-status-text">
+              <h4>Turnamen Champions League Selesai!</h4>
+              <p>Juara dan posisi podium telah diputuskan. Selamat kepada para pemenang!</p>
+            </div>
+          </div>
+          <div>
+            <span class="status-badge finished">TURNAMEN SELESAI</span>
+          </div>
+        `;
+      } else if (ucl.isLocked) {
+        bannerEl.innerHTML = `
+          <div class="ucl-status-info">
+            <div class="ucl-status-icon active">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div class="ucl-status-text">
+              <h4>Bagan Knockout Terkunci & Aktif</h4>
+              <p>4 Tim resmi berlaga di fase gugur. Mainkan pertandingan di laptop masing-masing dan input hasilnya.</p>
+            </div>
+          </div>
+          <div>
+            <span class="status-badge finished">FASE RESMI</span>
+          </div>
+        `;
+      } else {
+        bannerEl.innerHTML = `
+          <div class="ucl-status-info">
+            <div class="ucl-status-icon projected">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+            </div>
+            <div class="ucl-status-text">
+              <h4>${isLeagueFinished ? 'Liga Selesai — 4 Besar Siap!' : 'Proyeksi 4 Besar Sementara'}</h4>
+              <p>${isLeagueFinished ? 'Semua laga liga telah usai. Klik tombol Kunci 4 Besar untuk memulai fase knockout resmi.' : `Liga reguler berjalan (${finishedMatches} / ${totalMatches} selesai). Bagan ini mengikuti klasemen secara live.`}</p>
+            </div>
+          </div>
+          <div>
+            <button class="btn btn-primary btn-sm" onclick="window.app.syncUclWithStandings(true)">
+              Kunci 4 Besar Sekarang
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    // Winner Celebration Podium
+    const podiumEl = document.getElementById('ucl-podium-card');
+    if (podiumEl) {
+      if (ucl.final.isFinished && ucl.final.winnerId) {
+        const champ = this.getClub(ucl.final.winnerId);
+        const runnerUp = this.getClub(ucl.final.loserId);
+        const third = ucl.thirdPlace.isFinished ? this.getClub(ucl.thirdPlace.winnerId) : null;
+
+        podiumEl.style.display = 'block';
+        podiumEl.innerHTML = `
+          <div class="podium-header">
+            <div class="podium-trophy-badge">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            </div>
+            <h3 class="podium-title">JUARA CHAMPIONS LEAGUE FC26</h3>
+            <p class="podium-subtitle">Selamat kepada sang pemenang kompetisi turnamen akbar!</p>
+          </div>
+          <div class="podium-ranks-grid">
+            <!-- Champion -->
+            <div class="podium-rank-box champion">
+              <span class="rank-badge-tag gold">JUARA 1 (CHAMPION)</span>
+              <div class="podium-team-name">${champ ? champ.name : 'Unknown'}</div>
+              <div class="podium-player-name">Player: ${champ ? champ.player : '-'}</div>
+            </div>
+            <!-- Runner-Up -->
+            <div class="podium-rank-box runner-up">
+              <span class="rank-badge-tag silver">RUNNER-UP (JUARA 2)</span>
+              <div class="podium-team-name">${runnerUp ? runnerUp.name : 'Unknown'}</div>
+              <div class="podium-player-name">Player: ${runnerUp ? runnerUp.player : '-'}</div>
+            </div>
+            <!-- 3rd Place -->
+            <div class="podium-rank-box third">
+              <span class="rank-badge-tag bronze">PERINGKAT 3</span>
+              <div class="podium-team-name">${third ? third.name : (ucl.thirdPlace.isFinished ? 'TBD' : 'Sedang Bertanding')}</div>
+              <div class="podium-player-name">${third ? 'Player: ' + third.player : '-'}</div>
+            </div>
+          </div>
+        `;
+      } else {
+        podiumEl.style.display = 'none';
+      }
+    }
+
+    // Render Cards
+    this.renderUclMatchCardDom('ucl-card-sf1', 'sf1', 'SEMIFINAL 1', '#1 Klasemen', '#4 Klasemen');
+    this.renderUclMatchCardDom('ucl-card-sf2', 'sf2', 'SEMIFINAL 2', '#2 Klasemen', '#3 Klasemen');
+    this.renderUclMatchCardDom('ucl-card-final', 'final', 'GRAND FINAL (PEREBUTAN TROFI)', 'Pemenang SF 1', 'Pemenang SF 2');
+    this.renderUclMatchCardDom('ucl-card-third', 'thirdPlace', 'PEREBUTAN JUARA 3', 'Kalah SF 1', 'Kalah SF 2');
+  }
+
+  renderUclMatchCardDom(elementId, matchKey, title, placeholderHome, placeholderAway) {
+    const cardEl = document.getElementById(elementId);
+    if (!cardEl) return;
+
+    const match = this.state.uclState[matchKey];
+    if (!match) return;
+
+    const homeClub = match.homeTeamId ? this.getClub(match.homeTeamId) : null;
+    const awayClub = match.awayTeamId ? this.getClub(match.awayTeamId) : null;
+
+    const isReady = homeClub && awayClub;
+    const isFinished = match.isFinished;
+
+    const homeName = homeClub ? homeClub.name : placeholderHome;
+    const homePlayer = homeClub ? homeClub.player : '-';
+    const homeColor = homeClub ? homeClub.color : '#475569';
+
+    const awayName = awayClub ? awayClub.name : placeholderAway;
+    const awayPlayer = awayClub ? awayClub.player : '-';
+    const awayColor = awayClub ? awayClub.color : '#475569';
+
+    const isHomeWinner = isFinished && match.winnerId === match.homeTeamId;
+    const isAwayWinner = isFinished && match.winnerId === match.awayTeamId;
+
+    let scoreHomeText = isFinished ? match.homeScore : '-';
+    let scoreAwayText = isFinished ? match.awayScore : '-';
+
+    if (isFinished && match.isPenalties) {
+      scoreHomeText += ` <span class="ucl-pen-badge">(${match.homePen})</span>`;
+      scoreAwayText += ` <span class="ucl-pen-badge">(${match.awayPen})</span>`;
+    }
+
+    let statusHtml = '';
+    if (isFinished) {
+      statusHtml = '<span class="status-badge finished">Selesai (FT)</span>';
+    } else if (isReady) {
+      statusHtml = '<span class="status-badge scheduled">Siap Bertanding</span>';
+    } else {
+      statusHtml = '<span class="status-badge scheduled" style="opacity:0.6;">Menunggu Tim</span>';
+    }
+
+    let buttonHtml = '';
+    if (isReady) {
+      buttonHtml = `
+        <button class="btn ${isFinished ? 'btn-secondary' : 'btn-primary'} btn-sm" onclick="window.app.openUclScoreModal('${matchKey}')">
+          ${isFinished ? 'Edit Skor' : 'Input Skor'}
+        </button>
+      `;
+    } else {
+      buttonHtml = `
+        <button class="btn btn-secondary btn-sm" disabled style="opacity:0.4; cursor:not-allowed;">
+          Menunggu Tim
+        </button>
+      `;
+    }
+
+    cardEl.innerHTML = `
+      <div class="ucl-card-header">
+        <span class="ucl-card-title">${title}</span>
+        <span class="ucl-laptop-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Laptop ${match.laptopNumber || 1}
+        </span>
+      </div>
+
+      <div class="ucl-teams-wrap">
+        <!-- Home Team -->
+        <div class="ucl-team-row ${isHomeWinner ? 'winner' : ''}">
+          <div class="ucl-team-left">
+            <div class="team-badge-circle" style="background-color: ${homeColor};">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="ucl-team-names">
+              <span class="ucl-club-name">${homeName}</span>
+              <span class="ucl-player-name">${homePlayer}</span>
+            </div>
+          </div>
+          <div class="ucl-team-score-num">${scoreHomeText}</div>
+        </div>
+
+        <!-- Away Team -->
+        <div class="ucl-team-row ${isAwayWinner ? 'winner' : ''}">
+          <div class="ucl-team-left">
+            <div class="team-badge-circle" style="background-color: ${awayColor};">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="ucl-team-names">
+              <span class="ucl-club-name">${awayName}</span>
+              <span class="ucl-player-name">${awayPlayer}</span>
+            </div>
+          </div>
+          <div class="ucl-team-score-num">${scoreAwayText}</div>
+        </div>
+      </div>
+
+      <div class="ucl-card-action">
+        ${statusHtml}
+        ${buttonHtml}
+      </div>
+    `;
+  }
+
+  // Knockout Score Modal Handlers
+  openUclScoreModal(matchKey) {
+    const match = this.state.uclState[matchKey];
+    if (!match || !match.homeTeamId || !match.awayTeamId) return;
+
+    const homeClub = this.getClub(match.homeTeamId);
+    const awayClub = this.getClub(match.awayTeamId);
+
+    document.getElementById('modal-ucl-match-key').value = matchKey;
+    document.getElementById('ucl-score-modal-meta').textContent = `CHAMPIONS LEAGUE • ${match.roundName || matchKey.toUpperCase()}`;
+
+    // Home details
+    document.getElementById('modal-ucl-home-name').textContent = homeClub ? homeClub.name : 'Unknown';
+    document.getElementById('modal-ucl-home-player').textContent = homeClub ? homeClub.player : '-';
+    const homeBadge = document.getElementById('modal-ucl-home-badge');
+    if (homeBadge && homeClub) homeBadge.style.backgroundColor = homeClub.color || '#2563eb';
+    document.getElementById('input-ucl-home-score').value = match.isFinished ? match.homeScore : 0;
+
+    // Away details
+    document.getElementById('modal-ucl-away-name').textContent = awayClub ? awayClub.name : 'Unknown';
+    document.getElementById('modal-ucl-away-player').textContent = awayClub ? awayClub.player : '-';
+    const awayBadge = document.getElementById('modal-ucl-away-badge');
+    if (awayBadge && awayClub) awayBadge.style.backgroundColor = awayClub.color || '#ef4444';
+    document.getElementById('input-ucl-away-score').value = match.isFinished ? match.awayScore : 0;
+
+    // Penalties setup
+    const penToggle = document.getElementById('input-ucl-penalties-toggle');
+    const penInputs = document.getElementById('ucl-penalty-inputs');
+    if (penToggle) penToggle.checked = !!match.isPenalties;
+    if (penInputs) penInputs.style.display = match.isPenalties ? 'flex' : 'none';
+    document.getElementById('input-ucl-home-pen').value = match.homePen || 0;
+    document.getElementById('input-ucl-away-pen').value = match.awayPen || 0;
+
+    // Laptop Select
+    const laptopSelect = document.getElementById('modal-ucl-match-laptop');
+    let opts = '';
+    for (let i = 1; i <= this.state.laptopCount; i++) {
+      opts += `<option value="${i}" ${match.laptopNumber === i ? 'selected' : ''}>Laptop ${i}</option>`;
+    }
+    laptopSelect.innerHTML = opts;
+
+    // Clear score button
+    const clearBtn = document.getElementById('btn-clear-ucl-match');
+    if (clearBtn) clearBtn.style.display = match.isFinished ? 'inline-flex' : 'none';
+
+    this.openModal('modal-ucl-score');
+  }
+
+  adjustUclScore(side, amount) {
+    const input = document.getElementById(side === 'home' ? 'input-ucl-home-score' : 'input-ucl-away-score');
+    if (input) {
+      let val = parseInt(input.value, 10) || 0;
+      val += amount;
+      if (val < 0) val = 0;
+      if (val > 99) val = 99;
+      input.value = val;
+
+      // Auto-suggest penalties toggle if draw
+      const hVal = parseInt(document.getElementById('input-ucl-home-score').value, 10);
+      const aVal = parseInt(document.getElementById('input-ucl-away-score').value, 10);
+      const penToggle = document.getElementById('input-ucl-penalties-toggle');
+      const penInputs = document.getElementById('ucl-penalty-inputs');
+      if (hVal === aVal) {
+        if (penToggle) penToggle.checked = true;
+        if (penInputs) penInputs.style.display = 'flex';
+      }
+    }
+  }
+
+  saveUclScore() {
+    const matchKey = document.getElementById('modal-ucl-match-key').value;
+    const match = this.state.uclState[matchKey];
+    if (!match) return;
+
+    const hScore = parseInt(document.getElementById('input-ucl-home-score').value, 10);
+    const aScore = parseInt(document.getElementById('input-ucl-away-score').value, 10);
+    const laptopVal = parseInt(document.getElementById('modal-ucl-match-laptop').value, 10);
+    const isPen = document.getElementById('input-ucl-penalties-toggle').checked;
+    const hPen = parseInt(document.getElementById('input-ucl-home-pen').value, 10) || 0;
+    const aPen = parseInt(document.getElementById('input-ucl-away-pen').value, 10) || 0;
+
+    if (isNaN(hScore) || isNaN(aScore) || hScore < 0 || aScore < 0) {
+      alert('Masukkan skor angka yang valid!');
+      return;
+    }
+
+    let winnerId = null;
+    let loserId = null;
+
+    if (hScore > aScore) {
+      winnerId = match.homeTeamId;
+      loserId = match.awayTeamId;
+    } else if (aScore > hScore) {
+      winnerId = match.awayTeamId;
+      loserId = match.homeTeamId;
+    } else {
+      // Draw: must be decided via penalties
+      if (!isPen) {
+        alert('Skor waktu normal imbang (seri)! Di sistem gugur (knockout), centang "Adu Penalti" dan masukkan skor penalti untuk menentukan pemenang.');
+        return;
+      }
+      if (hPen === aPen) {
+        alert('Skor adu penalti tidak boleh sama! Harus ada tim yang memenangkan adu penalti.');
+        return;
+      }
+      if (hPen > aPen) {
+        winnerId = match.homeTeamId;
+        loserId = match.awayTeamId;
+      } else {
+        winnerId = match.awayTeamId;
+        loserId = match.homeTeamId;
+      }
+    }
+
+    match.homeScore = hScore;
+    match.awayScore = aScore;
+    match.isPenalties = isPen;
+    match.homePen = isPen ? hPen : 0;
+    match.awayPen = isPen ? aPen : 0;
+    match.isFinished = true;
+    match.winnerId = winnerId;
+    match.loserId = loserId;
+    if (!isNaN(laptopVal)) match.laptopNumber = laptopVal;
+
+    // Progression logic
+    this.state.uclState.isLocked = true; // Automatically lock bracket once a knockout match is played
+    const ucl = this.state.uclState;
+
+    if (matchKey === 'sf1') {
+      ucl.final.homeTeamId = winnerId;
+      ucl.thirdPlace.homeTeamId = loserId;
+    } else if (matchKey === 'sf2') {
+      ucl.final.awayTeamId = winnerId;
+      ucl.thirdPlace.awayTeamId = loserId;
+    }
+
+    this.saveState();
+    this.closeModal('modal-ucl-score');
+    this.renderAll();
+
+    const winClub = this.getClub(winnerId);
+    if (matchKey === 'final') {
+      this.showToast(`🏆 SELAMAT! ${winClub ? winClub.name : 'Tim'} MENJADI JUARA CHAMPIONS LEAGUE FC26!`, 'success');
+    } else {
+      this.showToast(`Hasil ${match.roundName} disimpan! ${winClub ? winClub.name : 'Tim'} melaju ke babak selanjutnya.`, 'success');
+    }
+  }
+
+  clearUclMatchScore() {
+    const matchKey = document.getElementById('modal-ucl-match-key').value;
+    const match = this.state.uclState[matchKey];
+    if (!match) return;
+
+    if (confirm('Hapus skor pertandingan ini?')) {
+      match.homeScore = 0;
+      match.awayScore = 0;
+      match.homePen = 0;
+      match.awayPen = 0;
+      match.isPenalties = false;
+      match.isFinished = false;
+      match.winnerId = null;
+      match.loserId = null;
+
+      // Reset downstream finalists
+      const ucl = this.state.uclState;
+      if (matchKey === 'sf1') {
+        ucl.final.homeTeamId = null;
+        ucl.thirdPlace.homeTeamId = null;
+      } else if (matchKey === 'sf2') {
+        ucl.final.awayTeamId = null;
+        ucl.thirdPlace.awayTeamId = null;
+      }
+
+      this.saveState();
+      this.closeModal('modal-ucl-score');
+      this.renderAll();
+      this.showToast('Skor pertandingan knockout telah dihapus.', 'info');
     }
   }
 }
